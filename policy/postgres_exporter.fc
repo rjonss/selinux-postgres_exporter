@@ -1,0 +1,2 @@
+/var/opt/prometheus/postgres_exporter/postgres_exporter		--	gen_context(system_u:object_r:postgres_exporter_exec_t,s0)
+/var/opt/prometheus/postgres_exporter(/.*)? 			--	gen_context(system_u:object_r:postgres_exporter_etc_t,s0)

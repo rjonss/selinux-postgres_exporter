@@ -1,0 +1,61 @@
+policy_module(postgres_exporter, 1.0.0)
+
+########################################
+#
+# Declarations
+#
+
+type postgres_exporter_t;
+type postgres_exporter_exec_t;
+type postgres_exporter_etc_t;
+init_daemon_domain(postgres_exporter_t, postgres_exporter_exec_t)
+
+########################################
+#
+# postgres_exporter local policy
+# 
+allow init_t postgres_exporter_etc_t:file { getattr open read };
+allow postgres_exporter_t self:fifo_file rw_fifo_file_perms;
+allow postgres_exporter_t self:unix_stream_socket create_stream_socket_perms;
+allow postgres_exporter_t net_conf_t:file { getattr open read };
+allow postgres_exporter_t node_t:tcp_socket node_bind;
+allow postgres_exporter_t postgresql_port_t:tcp_socket name_connect;
+allow postgres_exporter_t self:tcp_socket { accept bind connect create getattr getopt listen setopt };
+allow postgres_exporter_t sysctl_net_t:dir search;
+allow postgres_exporter_t sysctl_net_t:file { open read };
+allow postgres_exporter_t sysfs_t:file { open read };
+allow postgres_exporter_t unreserved_port_t:tcp_socket name_bind;
+allow unconfined_t postgres_exporter_etc_t:file { getattr open read write relabelto relabelfrom unlink rename setattr };
+allow postgres_exporter_etc_t fs_t:filesystem associate;
+allow postgres_exporter_t proc_t:file { open read };
+allow postgres_exporter_t self:tcp_socket { read write };
+
+# Default
+domain_use_interactive_fds(postgres_exporter_t)
+files_read_etc_files(postgres_exporter_t)
+miscfiles_read_localization(postgres_exporter_t)
+
+# Deny module_request to the kernel, and do not log them in the audit log
+kernel_dontaudit_request_load_module(postgres_exporter_t)
+
+# net_conf_t
+sysnet_read_config(postgres_exporter_t)
+
+# node_t, tcp_socket
+corenet_tcp_bind_generic_node(postgres_exporter_t)
+
+# postgresql_port_t
+corenet_tcp_connect_postgresql_port(postgres_exporter_t)
+
+# sysctl_net_t
+kernel_read_net_sysctls(postgres_exporter_t)
+
+# dev_list_sysfs
+dev_list_sysfs(postgres_exporter_t)
+
+# unreserved_port_t
+corenet_tcp_bind_generic_port(postgres_exporter_t)
+
+# Misc, allow for restorecon
+unconfined_dontaudit_write_state(postgres_exporter_etc_t)
+fs_associate(postgres_exporter_t)
